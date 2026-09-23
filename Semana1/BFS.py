@@ -36,9 +36,9 @@
 #   'up'   => DESLOCA A PEÇA PARA CIMA
 #   'left' => DESLOCA A PEÇA PARA A ESQUERDA
 #   'right'=> DESLOCA A PEÇA PARA A DIREITA
+import time
 
 class Node:
-
 
     def __init__(self, state, parent, action):
         """
@@ -103,28 +103,31 @@ class Board:
         #   DEFINE O ESTADO OBJETIVO (GOAL) COM A CÉLULA VAZIA NA ÚLTIMA POSIÇÃO
         self.goal = (1, 2, 3, 4, 5, 6, 7, 8, None)
 
-        self.imprimirEstadoInicial()
+        print('ESTADO INICIAL:')
+        self.imprimirEstado(self.start)
+        print()
 
-    def imprimirEstadoInicial(self):
+        print('ESTADO OBJETIVO:')
+        self.imprimirEstado(self.goal)
+
+    def imprimirEstado(self, state):
         isFirstColumnIndex = lambda index: (index + 1) % 3 == 0
 
         digit = {1, 2, 3, 4, 5, 6, 7, 8}
 
-        print('ESTADO INICIAL:')
+        for index in range(len(state)):
 
-        for index in range(len(self.cell)):
-            if self.cell[index] in digit:
-                print(self.cell[index], end='\t')
+            if state[index] in digit:
+                print(state[index], end='\t')
 
-            if self.cell[index] is None:
+            if state[index] is None:
                 print(' ', end='\t')
 
             if isFirstColumnIndex(index):
                 print()
 
-        print()
-
     def imprimirDirecoes(self, actions):
+        stepsNumber = 0
 
         for index in range(len(actions)):
 
@@ -140,7 +143,10 @@ class Board:
             else:
                 print(f'DIREITA {'-> ' if index < len(actions) - 1 else ''}', end='')
 
-        print()
+            stepsNumber += 1
+
+        print('\n')
+        print(f'NÚMERO DE MOVIMENTOS: {stepsNumber}')
 
     def movements(self, currentState):
         """CRIA O MODELO DE TRANSIÇÃO (result/RESULTADO)"""
@@ -227,11 +233,12 @@ class Board:
 
                 totalNodesCount = self.exploredCount + len(frontier.frontier)
 
-                print(f'NÓS EXPLORADOS: {self.exploredCount} NÓS')
-                print(f'NÓS NA FRONTEIRA: {len(frontier.frontier)} NÓS')
-                print(f'TOTAL DE NÓS: {totalNodesCount} NÓS\n')
-                print(f'SOLUÇÃO (AÇÕES):')
+                print(f'CAMINHO: ', end='')
                 self.imprimirDirecoes(actions)
+                print(f'ESTADOS EXPANDIDOS: {self.exploredCount}')
+                print(f'ESTADOS NA FRONTEIRA: {len(frontier.frontier)}')
+                print(f'INFORMAÇÕES COMPLEMENTARES')
+                print(f'TOTAL DE ESTADOS: {totalNodesCount}\n')
 
                 return
 
@@ -246,10 +253,74 @@ class Board:
 
         totalNodesCount = self.exploredCount + len(frontier)
 
-        print(f'NÓS EXPLORADOS: {self.exploredCount} NÓS')
-        print(f'NÓS NA FRONTEIRA: {len(frontier)} NÓS')
-        print(f'TOTAL DE NÓS: {totalNodesCount} NÓS')
+        print(f'SOLUÇÃO INEXISTENTE')
+        print(f'ESTADOS EXPANDIDOS: {self.exploredCount}')
+        print(f'ESTADOS NA FRONTEIRA: {len(frontier)}')
+        print(f'INFORMAÇÕES COMPLEMENTARES')
+        print(f'TOTAL DE ESTADOS: {totalNodesCount}')
 
-#   TABULEIRO A 2 PASSOS DA SOLUÇÃO
-tabuleiro = Board((1, 2, 3, 4, 5, 6, None, 7, 8))
+def formatTime(t):
+
+    #   HORAS
+    if t >= 3600:
+        return f'{t / 3600.0:.0f}h'
+
+    #   MINUTOS
+    if t >= 60:
+        return f'{t / 60.0:.0f}min'
+
+    #   SEGUNDOS
+    if t >= 1.0:
+        return f'{t:.0f}s'
+
+    #   MILISSEGUNDOS
+    elif t >= 1e-3:
+        return f'{t * 1e3:.0f}ms'
+
+    #   MICROSSEGUNDOS
+    elif t >= 1e-6:
+        return f'{t * 1e6:.0f}µs'
+
+    #   NANOSSEGUNDOS
+    else:
+        return f'{t * 1e9:.0f}ns'
+
+print('============================================PRIMEIRA INSTÂNCIA============================================')
+tabuleiro = Board((1, 2, None, 4, 5, 3, 7, 8, 6))
+tempoInicio = time.perf_counter()
 tabuleiro.bfs()
+tempoFim = time.perf_counter()
+t = tempoFim - tempoInicio
+print(f'TEMPO DE EXECUÇÃO: {formatTime(t)}')
+
+print('============================================SEGUNDA INSTÂNCIA============================================')
+tabuleiro = Board((1, 5, 2, 4, 8, 3, None, 7, 6))
+tempoInicio = time.perf_counter()
+tabuleiro.bfs()
+tempoFim = time.perf_counter()
+t = tempoFim - tempoInicio
+print(f'TEMPO DE EXECUÇÃO: {formatTime(t)}')
+
+print('============================================TERCEIRA INSTÂNCIA============================================')
+tabuleiro = Board((None, 8, 2, 5, 7, 3, 1, 4, 6))
+tempoInicio = time.perf_counter()
+tabuleiro.bfs()
+tempoFim = time.perf_counter()
+t = tempoFim - tempoInicio
+print(f'TEMPO DE EXECUÇÃO: {formatTime(t)}')
+
+print('============================================QUARTA INSTÂNCIA============================================')
+tabuleiro = Board((8, 7, None, 5, 4, 2, 1, 6, 3))
+tempoInicio = time.perf_counter()
+tabuleiro.bfs()
+tempoFim = time.perf_counter()
+t = tempoFim - tempoInicio
+print(f'TEMPO DE EXECUÇÃO: {formatTime(t)}')
+
+print('============================================QUINTA INSTÂNCIA============================================')
+tabuleiro = Board((8, 6, 7, 2, 5, 4, 3, None, 1))
+tempoInicio = time.perf_counter()
+tabuleiro.bfs()
+tempoFim = time.perf_counter()
+t = tempoFim - tempoInicio
+print(f'TEMPO DE EXECUÇÃO: {formatTime(t)}')
