@@ -1,4 +1,6 @@
 from typing import List
+import random
+import matplotlib.pyplot as plt
 
 class Node:
     '''REPRESENTA UMA CANDIDATA À SOLUÇÃO'''
@@ -157,96 +159,10 @@ def imprimirItens(items : Items, capacity: int):
     print(f'CAPACIDADE MÁXIMA DA MOCHILA: {capacity}')
     print()
 
-'''
-class HillClimbing:
-
-    def __init__(self):
-'''
-#   ETAPA 2 - REPRESENTAÇÃO E AVALIAÇÃO DE UMA SOLUÇÃO
-
-#   TESTE 1 - MOCHILA VAZIA
-candidataInicial = Node([0] * 15)
-mochila = Knapsack(candidataInicial)
-configuracao = mochila.start.candidate
-pesoTotal = mochila.totalWeight
-valorTotal = mochila.totalValue
-capacidade = mochila.capacity
-
-print(f'=================================TESTES DA ETAPA 2================================')
-
-print(f'ITENS DISPONÍVEIS')
-imprimirItens(mochila.items, capacidade)
-print(f'=================================MOCHILA VAZIA====================================')
-
-print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao}')
-print(f'PESO TOTAL DOS ITENS NA MOCHILA: {pesoTotal}')
-print(f'VALOR TOTAL DOS ITENS NA MOCHILA: {valorTotal}')
-
-print()
-
-#   TESTE 2 - CANDIDATA VIÁVEL
-candidataInicial = Node([1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1])
-mochila = Knapsack(candidataInicial)
-configuracao = mochila.start.candidate
-pesoTotal = mochila.totalWeight
-valorTotal = mochila.totalValue
-
-print(f'=================================CANDIDATA VIÁVEL=================================')
-print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao}')
-print(f'PESO TOTAL DOS ITENS NA MOCHILA: {pesoTotal}')
-print(f'VALOR TOTAL DOS ITENS NA MOCHILA: {valorTotal}')
-
-print()
-
-#   TESTE 2 - CANDIDATA QUE ULTRAPASSA A CAPACIDADE MÁXIMA
-candidataInicial = Node([0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1])
-mochila = Knapsack(candidataInicial)
-configuracao = mochila.start.candidate
-pesoTotal = mochila.totalWeight
-valorTotal = mochila.totalValue
-
-print(f'=======CANDIDATA QUE ULTRAPASSA A CAPACIDADE MÁXIMA DA MOCHILA====================')
-print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao}')
-print(f'PESO TOTAL DOS ITENS NA MOCHILA: {pesoTotal if pesoTotal != -1 else 'inválido (peso excede a capacidade)'}')
-print(f'VALOR TOTAL DOS ITENS NA MOCHILA: {valorTotal if pesoTotal != -1 else 'inválido (peso excede a capacidade)'}')
-
-print('\n')
-
-#   ETAPA 3 - DEFINIÇÃO DA VIZINHANÇA
-
-print(f'=================================TESTES DA ETAPA 3================================')
-candidataInicial = Node([0, 1, 1, 0])
-items = Items([63, 21, 2, 32], [13, 2, 20, 10])
-capacidade = 70
-mochila = Knapsack(candidataInicial, items, capacidade)
-configuracao = mochila.start.candidate
-pesoTotal = mochila.totalWeight
-valorTotal = mochila.totalValue
-
-print(f'ITENS DISPONÍVEIS')
-imprimirItens(mochila.items, capacidade)
-
-print(f'=================================CANDIDATA VIÁVEL=================================')
-print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao} ', end='')
-print(f'PESO TOTAL DOS ITENS NA MOCHILA: {pesoTotal} ', end='')
-print(f'VALOR TOTAL DOS ITENS NA MOCHILA: {valorTotal}\n')
-print(f'VIZINHANÇA DA CANDIDATA ATUAL: ')
-vizinhanca = mochila.neighbours(candidataInicial)
-print(f'TOTAL DE VIZINHAS: {len(vizinhanca)}\n')
-
-for neighbour in vizinhanca:
-    print(f'VIZINHA {neighbour.start.candidate}:', end='  ')
-    print(f'PESO TOTAL DOS ITENS: {neighbour.totalWeight}', end='  ')
-    print(f'VALOR TOTAL DOS ITENS: {neighbour.totalValue}', end='  ')
-    print(f'PAI DESTA VIZINHA: {neighbour.start.parent.candidate}')
-print()
-
-#   ETAPA 4 - IMPLEMENTAÇÃO DO HILL CLIMBING
-print(f'=================================TESTES DA ETAPA 4================================')
-
-
-def hillClimbing(knapsack : Knapsack):
-    '''SOLUCIONA O PROBLEMA DA MOCHILA UTILIZANDO O ALGORITMO SUBIDA DE ENCOSTA'''
+def hillClimbing(knapsack : Knapsack, recordResults = False):
+    '''
+    SOLUCIONA O PROBLEMA DA MOCHILA UTILIZANDO O ALGORITMO SUBIDA DE ENCOSTA COM SUBIDA ÍNGREME (STEEPES-ASCENT)
+    '''
 
     #   VERIFICA SE A SOLUÇÃO É VIÁVEL
     if knapsack.isViable(knapsack.totalWeight):
@@ -263,8 +179,8 @@ def hillClimbing(knapsack : Knapsack):
         capacity = knapsack.capacity
 
         print(f'CONFIGURAÇÃO INICIAL DA MOCHILA: {initialCandidate} ', end='')
-        print(f'PESO TOTAL DOS ITENS NA MOCHILA: {initialWeight} ', end='')
-        print(f'VALOR TOTAL DOS ITENS NA MOCHILA: {initialValue}\n')
+        print(f'PESO: {initialWeight} ', end='\t')
+        print(f'VALOR: {initialValue}\n')
 
         currentKnapsack = knapsack
 
@@ -284,11 +200,6 @@ def hillClimbing(knapsack : Knapsack):
 
                 #   EXPANDE A VIZINHANÇA DA CANDIDATA COM O MAIOR VALOR TOTAL
                 neighbourhood = currentKnapsack.neighbours(currentNode)
-                currentNode = currentKnapsack.start
-                print(f'VIZINHA {neighbour.start.candidate}: ', end='')
-                print(f'PESO TOTAL DOS ITENS: {neighbour.totalWeight} ', end='')
-                print(f'VALOR TOTAL DOS ITENS: {neighbour.totalValue}')
-
                 goalFunctionEvaluations += 1
 
                 #   SE A VIZINHA ATUAL TIVER UM VALOR TOTAL MAIOR DO QUE O MAIOR VALOR ENCONTRADO
@@ -312,6 +223,11 @@ def hillClimbing(knapsack : Knapsack):
                 else:
                     remainingEvals -= 1
 
+                currentNode = currentKnapsack.start
+                print(f'VIZINHA {neighbour.start.candidate}: ', end='')
+                print(f'PESO: {neighbour.totalWeight} ', end='\t')
+                print(f'VALOR: {neighbour.totalValue}')
+
             print()
 
             #   SE NÃO EXISTIR UMA MELHORA NO VALOR TOTAL
@@ -321,26 +237,212 @@ def hillClimbing(knapsack : Knapsack):
 
             #   SE EXISTIR UMA MELHORA NO VALOR TOTAL
             else:
-                print(f'CANDIDATA COM O MAIOR VALOR TOTAL SELECIONADA: {currentKnapsack.start.candidate}')
-                print(f'PESO TOTAL DOS ITENS DA CANDIDATA SELECIONADA: {currentKnapsack.totalWeight} ', end='')
-                print(f'VALOR TOTAL DOS ITENS DA CANDIDATA SELECIONADA: {currentKnapsack.totalValue}\n')
+                print(f'CANDIDATA COM O MAIOR VALOR TOTAL SELECIONADA: {currentKnapsack.start.candidate} ', end='')
+                print(f'PESO: {currentKnapsack.totalWeight} ', end='\t')
+                print(f'VALOR: {currentKnapsack.totalValue}\n')
 
-
+        if recordResults:
+            goalFunctionEvaluationsList.append(goalFunctionEvaluations)
 
         print(f'NÚMERO DE AVALIAÇÕES DA FUNÇÃO OBJETIVO: {goalFunctionEvaluations}\n')
+
+        #   TRATADO PELO MATPLOTLIB
+        if recordResults:
+            weights.append(currentKnapsack.totalWeight)
+            values.append(currentKnapsack.totalValue)
 
         return currentKnapsack
 
     #   SE NÃO FOR UMA SOLUÇÃO VIÁVEL
     else:
         zerolist = [0] * len(knapsack.items.value)
+        print('CANDIDATA INVIÁVEL\n')
+
+        #   TRATADO PELO MATPLOTLIB
+        if recordResults:
+            weights.append('-')
+            values.append('-')
 
         #   RETORNA UMA MOCHILA VAZIA SEM ITENS PARA SELEÇÃO
         return Knapsack(Node(zerolist), Items(zerolist, zerolist), 0)
 
-candidataInicial = Node([0, 0, 0, 1, 0, 0])
+tableRows = []
+weights = []
+values = []
+
+tableColumns = []
+goalFunctionEvaluationsList = []
+def randomRestartHillClimbing(knapsack: Knapsack, restarts: int = 1, recordResults = True):
+    '''EXECUTA O ALGORITMO SUBIDA DE ENCOSTA COM REINÍCIOS ALEATÓRIOS
+       PARÂMETROS DE ENTRADA:
+       knapsack => UM OBJETO KNAPSACK QUE REPRESENTA UMA MOCHILA
+       (COM SUA RESPECTIVA CONFIGURAÇÃO, DOMÍNIO DE PESOS E VALORES PARA OS ITENS E SUA CAPACIDADE MÁXIMA DE PESO)
+       restarts => O NÚMERO DE REINÍCIOS ALEATÓRIOS FEITOS. SE NÃO FOR PASSADO COMO PARÂMETRO IRÁ SE COMPORTAR
+       COMO UM ALGORITMO SUBIDA DE ENCOSTA COM SUBIDA ÍNGREME (STEEPEST-ASCENT), COM A DIFERENÇA QUE
+       A CONFIGURAÇÃO INICIAL DA MOCHILA SERÁ DEFINIDA DE FORMA ALEATÓRIA E ELE SERÁ EXECUTADO
+       ATÉ CHEGAR EM UM PROVÁVEL MÁXIMO LOCAL E NÃO INDO ALÉM DISSO.
+    '''
+
+    #   DADOS SOBRE O POSSÍVEL MÁXIMO GLOBAL
+    localMaxima = 0
+    globalMaxima = 0
+
+    iterations = 1
+
+    currentInitialKnapsack = knapsack
+    currentCandidate = currentInitialKnapsack.start.candidate
+
+    currentGlobalMaximaKnapsack = None
+
+    #   TRATADO PELO MATPLOTLIB
+    tableColumns.append('ITERAÇÃO')
+
+    for counter in range(restarts):
+        tableColumns.append(counter + 1)
+
+    weights.append('PESO')
+    values.append('VALOR')
+
+    #   REALIZA AS ITERAÇÕES SOBRE AS VÁRIAS SOLUÇÕES UMA DE CADA VEZ
+    while iterations <= restarts:
+        print(f'============================================= {iterations}ª ITERAÇÃO =============================================')
+
+        #   EMBARALHA A ORDEM DOS ITENS COM O GERADOR PSEUDOALEATÓRIO COM SEED FIXADA
+        for index in range(len(currentCandidate)):
+
+            #   SORTEIA UM NÚMERO (0 OU 1) PARA CADA POSIÇÃO DO VETOR DE ITENS DA CANDIDATA
+            currentCandidate[index] = random.randint(0, 1)
+
+        currentInitialKnapsack = Knapsack(Node(currentCandidate), knapsack.items, knapsack.capacity)
+
+        currentLocalMaximaKnapsack = hillClimbing(currentInitialKnapsack, recordResults)
+        localMaxima = currentLocalMaximaKnapsack.totalValue
+
+        if localMaxima > globalMaxima and currentLocalMaximaKnapsack.isViable(currentLocalMaximaKnapsack.totalWeight):
+            globalMaxima = localMaxima
+            currentGlobalMaximaKnapsack = currentLocalMaximaKnapsack
+
+        if currentGlobalMaximaKnapsack is not None:
+            totalWeight = currentGlobalMaximaKnapsack.totalWeight
+            totalValue = currentGlobalMaximaKnapsack.totalValue
+
+            print(f'MELHOR CANDIDATA ATÉ O MOMENTO: {currentGlobalMaximaKnapsack.start.candidate} PESO: {totalWeight}\tVALOR: {totalValue}\n')
+
+        currentCandidate = currentInitialKnapsack.start.candidate
+
+        iterations += 1
+
+    #   TRATADO PELO MATPLOTLIB
+    tableRows.append(tableColumns)
+    tableRows.append(weights)
+    tableRows.append(values)
+
+    fig, ax = plt.subplots(figsize=(len(tableColumns) - 1, len(tableRows)))
+    ax.axis('off')
+
+    table = ax.table(cellText=tableRows,
+                     cellLoc='center',
+                     loc='center')
+
+    table.set_fontsize(40)
+    table.scale(1.5, 4.0)
+
+    for (row, column), cell in table.get_celld().items():
+        cell.set_facecolor('#444444')
+        cell.get_text().set_color('white')
+        cell.set_edgecolor('#aaaaaa')
+
+    print('TABELA COM O PESO E O VALOR FINAL DE CADA REINÍCIO:')
+
+    plt.show()
+
+    return currentGlobalMaximaKnapsack
+
+#   ETAPA 2 - REPRESENTAÇÃO E AVALIAÇÃO DE UMA SOLUÇÃO
+
+#   TESTE 1 - MOCHILA VAZIA
+candidataInicial = Node([0] * 15)
+mochila = Knapsack(candidataInicial)
+configuracao = mochila.start.candidate
+pesoTotal = mochila.totalWeight
+valorTotal = mochila.totalValue
+capacidade = mochila.capacity
+
+print(f'=================================TESTES DA ETAPA 2================================')
+
+print(f'ITENS DISPONÍVEIS')
+imprimirItens(mochila.items, capacidade)
+print(f'=================================MOCHILA VAZIA====================================')
+
+print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao}')
+print(f'PESO: {pesoTotal}')
+print(f'VALOR: {valorTotal}')
+
+print()
+
+#   TESTE 2 - CANDIDATA VIÁVEL
+candidataInicial = Node([1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1])
+mochila = Knapsack(candidataInicial)
+configuracao = mochila.start.candidate
+pesoTotal = mochila.totalWeight
+valorTotal = mochila.totalValue
+
+print(f'=================================CANDIDATA VIÁVEL=================================')
+print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao}')
+print(f'PESO: {pesoTotal}')
+print(f'VALOR: {valorTotal}')
+
+print()
+
+#   TESTE 2 - CANDIDATA QUE ULTRAPASSA A CAPACIDADE MÁXIMA
+candidataInicial = Node([0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1])
+mochila = Knapsack(candidataInicial)
+configuracao = mochila.start.candidate
+pesoTotal = mochila.totalWeight
+valorTotal = mochila.totalValue
+
+print(f'=======CANDIDATA QUE ULTRAPASSA A CAPACIDADE MÁXIMA DA MOCHILA====================')
+print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao}')
+print(f'PESO: {pesoTotal if pesoTotal != -1 else 'inválido (peso excede a capacidade)'}')
+print(f'VALOR: {valorTotal if pesoTotal != -1 else 'inválido (peso excede a capacidade)'}')
+
+print('\n')
+
+#   ETAPA 3 - DEFINIÇÃO DA VIZINHANÇA
+
+print(f'=================================TESTES DA ETAPA 3================================')
+candidataInicial = Node([0, 1, 1, 0])
+items = Items([63, 21, 2, 32], [13, 2, 20, 10])
+capacidade = 70
+mochila = Knapsack(candidataInicial, items, capacidade)
+configuracao = mochila.start.candidate
+pesoTotal = mochila.totalWeight
+valorTotal = mochila.totalValue
+
+print(f'ITENS DISPONÍVEIS')
+imprimirItens(mochila.items, capacidade)
+
+print(f'=================================CANDIDATA VIÁVEL=================================')
+print(f'CONFIGURAÇÃO ATUAL DA MOCHILA: {configuracao} ', end='')
+print(f'PESO: {pesoTotal} ', end='')
+print(f'VALOR: {valorTotal}\n')
+print(f'VIZINHANÇA DA CANDIDATA ATUAL: ')
+vizinhanca = mochila.neighbours(candidataInicial)
+print(f'TOTAL DE VIZINHAS: {len(vizinhanca)}\n')
+
+for neighbour in vizinhanca:
+    print(f'VIZINHA {neighbour.start.candidate}:', end='  ')
+    print(f'PESO: {neighbour.totalWeight}', end='  ')
+    print(f'VALOR: {neighbour.totalValue}', end='  ')
+    print(f'PAI DESTA VIZINHA: {neighbour.start.parent.candidate}')
+print()
+
+#   ETAPA 4 - IMPLEMENTAÇÃO DO HILL CLIMBING
+print(f'=================================TESTES DA ETAPA 4================================')
+
+candidataInicial = Node([0, 0, 1, 0, 0, 0])
 items = Items([80, 19, 37, 56, 41, 42], [14, 7, 2, 2, 4, 3])
-capacidade = 150                                                                            #   CAPACIDADE ARBITRÁRIA
+capacidade = 195                                                                            #   CAPACIDADE ARBITRÁRIA
 mochila = Knapsack(candidataInicial, items, capacidade)
 
 print(f'ITENS DISPONÍVEIS')
@@ -354,5 +456,58 @@ pesoTotal = mochilaComMaiorValorTotal.totalWeight
 valorTotal = mochilaComMaiorValorTotal.totalValue
 
 print(f'MOCHILA COM MAIOR VALOR ENCONTRADO: {candidataComMaiorValor} ', end='')
-print(f'PESO TOTAL DOS ITENS NA MOCHILA: {pesoTotal} ', end='')
-print(f'VALOR TOTAL DOS ITENS NA MOCHILA: {valorTotal}\n')
+print(f'PESO: {pesoTotal} ', end='')
+print(f'VALOR: {valorTotal}\n')
+
+#   CALCULA O TOTAL DE MOVIMENTOS REALIZADOS (ADICIONANDO ITENS)
+configuracaoInicial = mochilaComMaiorValorTotal
+movimentos = []
+numeroDeMovimentos = 0
+
+noAtual = configuracaoInicial.start
+
+while noAtual.parent is not None:
+    movimentos.append(noAtual)
+
+    numeroDeMovimentos += 1
+    noAtual = noAtual.parent
+
+movimentos.reverse()
+
+print(f'NÚMERO DE MOVIMENTOS: {numeroDeMovimentos}')
+print(f'CONFIGURAÇÃO INICIAL: {movimentos[0].parent.candidate}')
+print(f'MOVIMENTOS: ', end='')
+
+for estadoAtual in movimentos:
+    print(f'{estadoAtual.candidate} => ', end='')
+
+#   ETAPA 5 - ACRESCENTANDO REINÍCIOS ALEATÓRIOS
+
+print('\n')
+print(f'=================================TESTES DA ETAPA 5================================')
+
+candidataInicial = Node([0, 0, 0, 0, 0, 0])
+items = Items([80, 19, 37, 56, 41, 42], [14, 7, 2, 2, 4, 3])
+capacidade = 195                                                                            #   CAPACIDADE ARBITRÁRIA
+mochila = Knapsack(candidataInicial, items, capacidade)
+
+print(f'ITENS DISPONÍVEIS')
+imprimirItens(mochila.items, capacidade)
+
+print(f'==================EXECUTANDO O ALGORITMO HILL CLIMBING (SUBIDA DE ENCOSTA) COM REINÍCIOS ALEATÓRIOS (RANDOM RESTART):===========\n')
+possivelMaximoGlobal = randomRestartHillClimbing(mochila, 20)
+configuracao = possivelMaximoGlobal.start.candidate
+pesoTotal = possivelMaximoGlobal.totalWeight
+valorTotal = possivelMaximoGlobal.totalValue
+
+print(f'\nMÁXIMO GLOBAL ENCONTRADO: {configuracao} ', end='')
+print(f'PESO: {pesoTotal} ', end='')
+print(f'VALOR: {valorTotal}')
+
+totalGoalFunctionEvaluations = 0
+for evals in goalFunctionEvaluationsList:
+    totalGoalFunctionEvaluations += evals
+
+numeroDeExecucoes = len(tableColumns) - 1
+
+print(f'TOTAL DE AVALIAÇÕES DA FUNÇÃO OBJETIVO EM TODAS AS {numeroDeExecucoes} execuções: {totalGoalFunctionEvaluations}')
