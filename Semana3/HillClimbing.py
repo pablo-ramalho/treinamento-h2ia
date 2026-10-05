@@ -140,19 +140,19 @@ class Knapsack:
 
 def imprimirItens(items : Items, capacity: int):
 
-    print('ITEM', end='\t')
+    print('ITEM\t\t', end='')
     for index in range(len(items.weight)):
-        print(f'{index + 1}', end='\t')
+        print(f'{index + 1}\t\t', end='')
     print()
 
-    print('PESO', end='\t')
+    print('PESO\t\t', end='')
     for weight in items.weight:
-        print(f'{weight}', end='\t')
+        print(f'{weight}\t\t', end='')
     print()
 
-    print('VALOR', end='\t')
+    print('VALOR\t\t', end='')
     for value in items.value:
-        print(f'{value}', end='\t')
+        print(f'{value}\t\t', end='')
 
     print()
 
@@ -178,9 +178,11 @@ def hillClimbing(knapsack : Knapsack, recordResults = False):
         items = knapsack.items
         capacity = knapsack.capacity
 
-        print(f'CONFIGURAÇÃO INICIAL DA MOCHILA: {initialCandidate} ', end='')
-        print(f'PESO: {initialWeight} ', end='\t')
+        print(f'CONFIGURAÇÃO INICIAL DA MOCHILA: {initialCandidate} ')
+        print(f'PESO: {initialWeight} ')
         print(f'VALOR: {initialValue}\n')
+
+        goalFunctionEvaluations += 1
 
         currentKnapsack = knapsack
 
@@ -237,9 +239,11 @@ def hillClimbing(knapsack : Knapsack, recordResults = False):
 
             #   SE EXISTIR UMA MELHORA NO VALOR TOTAL
             else:
-                print(f'CANDIDATA COM O MAIOR VALOR TOTAL SELECIONADA: {currentKnapsack.start.candidate} ', end='')
-                print(f'PESO: {currentKnapsack.totalWeight} ', end='\t')
+                print(f'CANDIDATA COM O MAIOR VALOR TOTAL SELECIONADA: {currentKnapsack.start.candidate} ')
+                print(f'PESO: {currentKnapsack.totalWeight} ')
                 print(f'VALOR: {currentKnapsack.totalValue}\n')
+
+                goalFunctionEvaluations += 1
 
         if recordResults:
             goalFunctionEvaluationsList.append(goalFunctionEvaluations)
@@ -256,12 +260,10 @@ def hillClimbing(knapsack : Knapsack, recordResults = False):
     #   SE NÃO FOR UMA SOLUÇÃO VIÁVEL
     else:
         zerolist = [0] * len(knapsack.items.value)
-        print('CANDIDATA INVIÁVEL\n')
+        print('CANDIDATA INVIÁVEL: ', end='')
 
-        #   TRATADO PELO MATPLOTLIB
-        if recordResults:
-            weights.append('-')
-            values.append('-')
+        inviableCandidate = knapsack.start.candidate
+        print(f'{inviableCandidate}\n')
 
         #   RETORNA UMA MOCHILA VAZIA SEM ITENS PARA SELEÇÃO
         return Knapsack(Node(zerolist), Items(zerolist, zerolist), 0)
@@ -272,7 +274,11 @@ values = []
 
 tableColumns = []
 goalFunctionEvaluationsList = []
-def randomRestartHillClimbing(knapsack: Knapsack, restarts: int = 1, recordResults = True):
+def randomRestartHillClimbing(restarts: int = 1,
+                              capacity: int = 275,
+                              itemsToShuffle: Items = Items([63, 21, 2, 32, 13, 80, 19, 37, 56, 41, 14, 8, 32, 42, 7],
+                                                           [13, 2, 20, 10, 7, 14, 7, 2, 2, 4, 16, 17, 17, 3, 21]),
+                              recordResults = True):
     '''EXECUTA O ALGORITMO SUBIDA DE ENCOSTA COM REINÍCIOS ALEATÓRIOS
        PARÂMETROS DE ENTRADA:
        knapsack => UM OBJETO KNAPSACK QUE REPRESENTA UMA MOCHILA
@@ -285,12 +291,9 @@ def randomRestartHillClimbing(knapsack: Knapsack, restarts: int = 1, recordResul
 
     #   DADOS SOBRE O POSSÍVEL MÁXIMO GLOBAL
     localMaxima = 0
-    globalMaxima = 0
+    bestValue = 0
 
     iterations = 1
-
-    currentInitialKnapsack = knapsack
-    currentCandidate = currentInitialKnapsack.start.candidate
 
     currentGlobalMaximaKnapsack = None
 
@@ -307,28 +310,33 @@ def randomRestartHillClimbing(knapsack: Knapsack, restarts: int = 1, recordResul
     while iterations <= restarts:
         print(f'============================================= {iterations}ª ITERAÇÃO =============================================')
 
-        #   EMBARALHA A ORDEM DOS ITENS COM O GERADOR PSEUDOALEATÓRIO COM SEED FIXADA
-        for index in range(len(currentCandidate)):
-
-            #   SORTEIA UM NÚMERO (0 OU 1) PARA CADA POSIÇÃO DO VETOR DE ITENS DA CANDIDATA
-            currentCandidate[index] = random.randint(0, 1)
-
-        currentInitialKnapsack = Knapsack(Node(currentCandidate), knapsack.items, knapsack.capacity)
-
+        #   CRIA UMA MOCHILA QUE PODE SER OU NÃO VIÁVEL
+        currentInitialKnapsack = generateCurrentInitialKnapsack(itemsToShuffle, capacity)
         currentLocalMaximaKnapsack = hillClimbing(currentInitialKnapsack, recordResults)
+
+        totalWeight = currentInitialKnapsack.totalWeight
+
+        #   GARANTE A VIABILIDADE DA SOLUÇÃO PARA CADA REINÍCIO/ITERAÇÃO,
+        #   TENTANDO SEMPRE GERAR UMA NOVA CANDIDATA INICIAL
+        #   ATÉ QUE ELA SEJA VIÁVEL
+        while not(currentLocalMaximaKnapsack.isViable(totalWeight)):
+            print(f'TENTANDO GERAR UMA NOVA CANDIDATA INICIAL VIÁVEL:\n')
+
+            currentInitialKnapsack = generateCurrentInitialKnapsack(itemsToShuffle, capacity)
+            currentLocalMaximaKnapsack = hillClimbing(currentInitialKnapsack, recordResults)
+
+            totalWeight = currentInitialKnapsack.totalWeight
+
         localMaxima = currentLocalMaximaKnapsack.totalValue
 
-        if localMaxima > globalMaxima and currentLocalMaximaKnapsack.isViable(currentLocalMaximaKnapsack.totalWeight):
-            globalMaxima = localMaxima
+        if localMaxima > bestValue:
+            bestValue = localMaxima
             currentGlobalMaximaKnapsack = currentLocalMaximaKnapsack
 
-        if currentGlobalMaximaKnapsack is not None:
             totalWeight = currentGlobalMaximaKnapsack.totalWeight
             totalValue = currentGlobalMaximaKnapsack.totalValue
 
-            print(f'MELHOR CANDIDATA ATÉ O MOMENTO: {currentGlobalMaximaKnapsack.start.candidate} PESO: {totalWeight}\tVALOR: {totalValue}\n')
-
-        currentCandidate = currentInitialKnapsack.start.candidate
+        print(f'MELHOR CANDIDATA ATÉ O MOMENTO: {currentGlobalMaximaKnapsack.start.candidate} PESO: {currentGlobalMaximaKnapsack.totalWeight}\tVALOR: {currentGlobalMaximaKnapsack.totalValue}\n')
 
         iterations += 1
 
@@ -357,6 +365,40 @@ def randomRestartHillClimbing(knapsack: Knapsack, restarts: int = 1, recordResul
     plt.show()
 
     return currentGlobalMaximaKnapsack
+
+def shuffleItems(itemsToShuffle: Items):
+    '''EMBARALHA A ORDEM DOS ITENS, MANTENDO A CORRESPONDÊNCIA ENTRE OS PESOS E OS VALORES'''
+
+    combined = list(zip(itemsToShuffle.weight, itemsToShuffle.value))
+    random.shuffle(combined)
+
+    weights, values = zip(*combined)
+
+    weightsShuffled = list(weights)
+    valuesShuffled = list(values)
+
+    return Items(weightsShuffled, valuesShuffled)
+
+def generateCurrentInitialKnapsack(itemsToShuffle: Items, capacity: int = 275):
+
+        #   CRIA UMA CANDIDATA VAZIA
+        currentCandidate = [0] * len(itemsToShuffle.value)
+
+        #   EMBARALHA A ORDEM DOS ITENS
+        shuffledItems = shuffleItems(itemsToShuffle)
+
+        #   PARA CADA ITEM, SORTEIA COM UMA CHANCE DE 50% DE ADICIONÁ-LO
+        for index in range(len(currentCandidate)):
+            currentCandidate[index] = random.randint(0, 1)
+
+        print(f'SEED USADA: None (relógio do sistema (padrão))\n')
+
+        currentInitialKnapsack = Knapsack(Node(currentCandidate), shuffledItems, capacity)
+
+        print('ITENS EMBARALHADOS:')
+        imprimirItens(currentInitialKnapsack.items, capacity)
+
+        return currentInitialKnapsack
 
 #   ETAPA 2 - REPRESENTAÇÃO E AVALIAÇÃO DE UMA SOLUÇÃO
 
@@ -486,21 +528,22 @@ for estadoAtual in movimentos:
 print('\n')
 print(f'=================================TESTES DA ETAPA 5================================')
 
-candidataInicial = Node([0, 0, 0, 0, 0, 0])
-items = Items([80, 19, 37, 56, 41, 42], [14, 7, 2, 2, 4, 3])
-capacidade = 195                                                                            #   CAPACIDADE ARBITRÁRIA
+candidataInicial = Node([0] * 15)
+items = Items([63, 21, 2, 32, 13, 80, 19, 37, 56, 41, 14, 8, 32, 42, 7],
+              [13, 2, 20, 10, 7, 14, 7, 2, 2, 4, 16, 17, 17, 3, 21])
+capacidade = 275                                                                            #   CAPACIDADE ARBITRÁRIA
 mochila = Knapsack(candidataInicial, items, capacidade)
 
 print(f'ITENS DISPONÍVEIS')
 imprimirItens(mochila.items, capacidade)
 
 print(f'==================EXECUTANDO O ALGORITMO HILL CLIMBING (SUBIDA DE ENCOSTA) COM REINÍCIOS ALEATÓRIOS (RANDOM RESTART):===========\n')
-possivelMaximoGlobal = randomRestartHillClimbing(mochila, 20)
-configuracao = possivelMaximoGlobal.start.candidate
-pesoTotal = possivelMaximoGlobal.totalWeight
-valorTotal = possivelMaximoGlobal.totalValue
+melhorSolucao = randomRestartHillClimbing(20)
+configuracao = melhorSolucao.start.candidate
+pesoTotal = melhorSolucao.totalWeight
+valorTotal = melhorSolucao.totalValue
 
-print(f'\nMÁXIMO GLOBAL ENCONTRADO: {configuracao} ', end='')
+print(f'\nMELHOR SOLUÇÃO ENCONTRADA: {configuracao} ', end='')
 print(f'PESO: {pesoTotal} ', end='')
 print(f'VALOR: {valorTotal}')
 
@@ -510,4 +553,4 @@ for evals in goalFunctionEvaluationsList:
 
 numeroDeExecucoes = len(tableColumns) - 1
 
-print(f'TOTAL DE AVALIAÇÕES DA FUNÇÃO OBJETIVO EM TODAS AS {numeroDeExecucoes} execuções: {totalGoalFunctionEvaluations}')
+print(f'TOTAL DE AVALIAÇÕES DA FUNÇÃO OBJETIVO EM TODAS AS {numeroDeExecucoes} EXECUÇÕES: {totalGoalFunctionEvaluations}')
